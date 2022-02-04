@@ -1,0 +1,133 @@
+1. install react-mailchimp-subscribe package to your nextJs app
+2. create a mailchimp account if you havent, then go to your dashboard and click "Signup Forms", then click "Embed Forms"
+3. get the url in the {form action=""} from the embed code
+4. go to your .env.local file and add assign the url to a variable (e.g. NEXT_PUBLIC_MAILCHIMP_URL)
+5. create a variable with the value of your mailchimp url from .env.local
+6. create a component for your newsletter form 
+  in NewsletterForm.js, add:
+    import { useState } from "react";
+    import { decode } from "html-entities";
+
+    const NewsletterForm = ({ status, message, onValidated }) => {
+      const [error, setError] = useState(null);
+      const [email, setEmail] = useState(null);
+
+      /**
+      * Handle form submit.
+      *
+      * @return {{value}|*|boolean|null}
+      */
+      const handleFormSubmit = () => {
+        setError(null);
+
+        if (!email) {
+          setError("Please enter a valid email address");
+          return null;
+        }
+
+        const isFormValidated = onValidated({ EMAIL: email });
+
+        // On success return true
+        return email && email.indexOf("@") > -1 && isFormValidated;
+      };
+
+      /**
+      * Handle Input Key Event.
+      *
+      * @param event
+      */
+      const handleInputKeyEvent = (event) => {
+        setError(null);
+        // Number 13 is the "Enter" key on the keyboard
+        if (event.keyCode === 13) {
+          // Cancel the default action, if needed
+          event.preventDefault();
+          // Trigger the button element with a click
+          handleFormSubmit();
+        }
+      };
+
+      /**
+      * Extract message from string.
+      *
+      * @param {String} message
+      * @return {null|*}
+      */
+      const getMessage = (message) => {
+        if (!message) {
+          return null;
+        }
+        const result = message?.split("-") ?? null;
+        if ("0" !== result?.[0]?.trim()) {
+          return decode(message);
+        }
+        const formattedMessage = result?.[1]?.trim() ?? null;
+        return formattedMessage ? decode(formattedMessage) : null;
+      };
+
+      return (
+        <>
+          <div className="d-flex newsletter-input-fields">
+            <div className="mc-field-group">
+              <input
+                onChange={(event) => setEmail(event?.target?.value ?? "")}
+                type="email"
+                placeholder="Your email"
+                className="mr-2"
+                onKeyUp={(event) => handleInputKeyEvent(event)}
+              />
+            </div>
+            <div className="button-wrap wp-block-button">
+              <button className="wp-block-button__link" onClick={handleFormSubmit}>
+                Subscribe
+              </button>
+            </div>
+          </div>
+          <div className="newsletter-form-info">
+            {status === "sending" && <div>Sending...</div>}
+            {status === "error" || error ? (
+              <div
+                className="newsletter-form-error"
+                dangerouslySetInnerHTML={{ __html: error || getMessage(message) }}
+              />
+            ) : null}
+            {status === "success" && status !== "error" && !error && (
+              <div dangerouslySetInnerHTML={{ __html: decode(message) }} />
+            )}
+          </div>
+        </>
+      );
+    };
+
+    export default NewsletterForm;
+
+7. create a component as wrapper for your form form 
+  in NewsletterSubscribe.js, add:
+    import MailchimpSubscribe from "react-mailchimp-subscribe";
+    import NewsletterForm from "./NewsletterForm";
+
+    const NewsletterSubscribe = () => {
+      const MAILCHIMP_URL = process.env.NEXT_PUBLIC_MAILCHIMP_URL;
+
+      return (
+        <MailchimpSubscribe
+          url={MAILCHIMP_URL}
+          render={(props) => {
+            const { subscribe, status, message } = props || {};
+            return (
+              <NewsletterForm
+                status={status}
+                message={message}
+                onValidated={(formData) => subscribe(formData)}
+              />
+            );
+          }}
+        />
+      );
+    };
+
+    export default NewsletterSubscribe;
+
+8. import <NewsletterSubscribe/> component to where you want the form to be displayed
+
+9. style your newsletter form
