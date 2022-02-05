@@ -1,9 +1,8 @@
-1. install react-mailchimp-subscribe package to your nextJs app
+1. install react-mailchimp-subscribe and html-entities packages to your nextJs app
 2. create a mailchimp account if you havent, then go to your dashboard and click "Signup Forms", then click "Embed Forms"
 3. get the url in the {form action=""} from the embed code
-4. go to your .env.local file and add assign the url to a variable (e.g. NEXT_PUBLIC_MAILCHIMP_URL)
-5. create a variable with the value of your mailchimp url from .env.local
-6. create a component for your newsletter form 
+4. go to your .env.local file and assign the url to a variable (e.g. NEXT_PUBLIC_MAILCHIMP_URL)
+5. create a component for your newsletter form 
   in NewsletterForm.js, add:
     import { useState } from "react";
     import { decode } from "html-entities";
@@ -101,7 +100,7 @@
 
     export default NewsletterForm;
 
-7. create a component as wrapper for your form form 
+6. create a component as wrapper for your form form 
   in NewsletterSubscribe.js, add:
     import MailchimpSubscribe from "react-mailchimp-subscribe";
     import NewsletterForm from "./NewsletterForm";
@@ -128,6 +127,6 @@
 
     export default NewsletterSubscribe;
 
-8. import <NewsletterSubscribe/> component to where you want the form to be displayed
+7. import <NewsletterSubscribe/> component to where you want the form to be displayed
 
-9. style your newsletter form
+8. style your newsletter form
